@@ -1,5 +1,6 @@
 modLoader = "javafml"
-loaderVersion = "[1,)"
+loaderVersion = "[4,)"
+license = "MIT"
 
 [[mods]]
 modId = "manabridge"
@@ -7,7 +8,6 @@ version = "1.0.0"
 displayName = "Mana Bridge"
 authors = "clay"
 description = "Merges mana from Ars Nouveau and Iron's Spells"
-license = "MIT"
 
 [[dependencies.manabridge]]
 modId = "neoforge"
