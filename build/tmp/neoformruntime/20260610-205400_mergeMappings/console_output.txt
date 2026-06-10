@@ -1,0 +1,39 @@
+--------------------------------------------------------------------------------
+
+Command-Line:
+ - C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\java.exe
+ - -jar
+ - C:\Users\USER\.gradle\caches\modules-2\files-2.1\net.neoforged.installertools\installertools\2.1.2\62740d5aa8f75f4a4d542d363bdda5b64a198f7a\installertools-2.1.2-fatjar.jar
+ - --task
+ - MERGE_MAPPING
+ - --left
+ - config\joined.tsrg
+ - --right
+ - C:\Users\USER\.gradle\caches\neoformruntime\artifacts\minecraft_1.21.1_client_mappings.txt
+ - --right-names
+ - right,left
+ - --classes
+ - --fields
+ - --methods
+ - --output
+ - ./output.tsrg
+--------------------------------------------------------------------------------
+
+Task: MERGE_MAPPING
+Left:    config\joined.tsrg
+         Reversed=false
+         null
+Right:   C:\Users\USER\.gradle\caches\neoformruntime\artifacts\minecraft_1.21.1_client_mappings.txt
+         Reversed=false
+         right,left
+Classes: true
+Fields:  true
+Methods: true
+Params:  false
+Output:  .\output.tsrg
+OpenJDK 64-Bit Server VM warning: INFO: os::commit_memory(0x0000000092400000, 224395264, 0) failed; error='Файл подкачки слишком мал для завершения операции' (DOS error/errno=1455)
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 224395264 bytes. Error detail: G1 virtual space
+# An error report file with more information is saved as:
+# D:\mod\ManaBridge\build\tmp\neoformruntime\20260610-205400_mergeMappings\hs_err_pid2020.log

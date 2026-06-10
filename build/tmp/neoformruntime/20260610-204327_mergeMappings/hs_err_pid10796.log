@@ -1,0 +1,243 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 123731968 bytes. Error detail: G1 virtual space
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   This process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Unscaled Compressed Oops mode in which the Java heap is
+#     placed in the first 4GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 4GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3714), pid=10796, tid=4532
+#
+# JRE version:  (21.0.11+10) (build )
+# Java VM: OpenJDK 64-Bit Server VM (21.0.11+10-LTS, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: C:\Users\USER\.gradle\caches\modules-2\files-2.1\net.neoforged.installertools\installertools\2.1.2\62740d5aa8f75f4a4d542d363bdda5b64a198f7a\installertools-2.1.2-fatjar.jar --task MERGE_MAPPING --left config\joined.tsrg --right C:\Users\USER\.gradle\caches\neoformruntime\artifacts\minecraft_1.21.1_client_mappings.txt --right-names right,left --classes --fields --methods --output ./output.tsrg
+
+Host: AMD Ryzen 5 5500U with Radeon Graphics         , 12 cores, 7G,  Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+Time: Wed Jun 10 20:43:27 2026 elapsed time: 0.009752 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000024a70cd7660):  JavaThread "Unknown thread" [_thread_in_vm, id=4532, stack(0x0000004cb1300000,0x0000004cb1400000) (1024K)]
+
+Stack: [0x0000004cb1300000,0x0000004cb1400000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6d7e19]
+V  [jvm.dll+0x8b5096]
+V  [jvm.dll+0x8b764e]
+V  [jvm.dll+0x8b7d33]
+V  [jvm.dll+0x284596]
+V  [jvm.dll+0x6d4735]
+V  [jvm.dll+0x6c845a]
+V  [jvm.dll+0x35ef08]
+V  [jvm.dll+0x366b46]
+V  [jvm.dll+0x3b7c2e]
+V  [jvm.dll+0x3b7ed8]
+V  [jvm.dll+0x33310c]
+V  [jvm.dll+0x333c5b]
+V  [jvm.dll+0x87f04b]
+V  [jvm.dll+0x3c4bb1]
+V  [jvm.dll+0x868295]
+V  [jvm.dll+0x457c41]
+V  [jvm.dll+0x459831]
+C  [jli.dll+0x52dc]
+C  [ucrtbase.dll+0x21bb2]
+C  [KERNEL32.DLL+0x17374]
+C  [ntdll.dll+0x4cc91]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007ffd7ca8b1c8, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+Total: 0
+
+Other Threads:
+  0x0000024a730a96f0 WorkerThread "GC Thread#0"                     [id=8888, stack(0x0000004cb1400000,0x0000004cb1500000) (1024K)]
+  0x0000024a730b9030 ConcurrentGCThread "G1 Main Marker"            [id=12528, stack(0x0000004cb1500000,0x0000004cb1600000) (1024K)]
+  0x0000024a730bac10 WorkerThread "G1 Conc#0"                       [id=10668, stack(0x0000004cb1600000,0x0000004cb1700000) (1024K)]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffd7c1857f7]
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007ffd7caff670] Heap_lock - owner thread: 0x0000024a70cd7660
+
+Heap address: 0x000000008ae00000, size: 1874 MB, Compressed Oops mode: 32-bit
+
+CDS archive(s) mapped at: [0x0000000000000000-0x0000000000000000-0x0000000000000000), size 0, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 1.
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0, Narrow klass range: 0x0
+
+GC Precious Log:
+ CardTable entry size: 512
+ Card Set container configuration: InlinePtr #cards 5 size 8 Array Of Cards #cards 12 size 40 Howl #buckets 4 coarsen threshold 1843 Howl Bitmap #cards 512 size 80 coarsen threshold 460 Card regions per heap region 1 cards per card region 2048
+
+Heap:
+ garbage-first heap   total 0K, used 0K [0x000000008ae00000, 0x0000000100000000)
+  region size 1024K, 0 young (0K), 0 survivors (0K)
+
+[error occurred during error reporting (printing heap information), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffd7c571789]
+GC Heap History (0 events):
+No events
+
+Dll operation events (1 events):
+Event: 0.005 Loaded shared library C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\java.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes loaded (0 events):
+No events
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+ZGC Phase Switch (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Memory protections (0 events):
+No events
+
+Nmethod flushes (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff776db0000 - 0x00007ff776dbe000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\java.exe
+0x00007ffdf5ef0000 - 0x00007ffdf60e8000 	C:\Windows\SYSTEM32\ntdll.dll
+0x00007ffdf5c00000 - 0x00007ffdf5cc2000 	C:\Windows\System32\KERNEL32.DLL
+0x00007ffdf3c10000 - 0x00007ffdf3f06000 	C:\Windows\System32\KERNELBASE.dll
+0x00007ffdf3720000 - 0x00007ffdf3820000 	C:\Windows\System32\ucrtbase.dll
+0x00007ffdbc9b0000 - 0x00007ffdbc9ce000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\VCRUNTIME140.dll
+0x00007ffdbded0000 - 0x00007ffdbdee8000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\jli.dll
+0x00007ffdf4090000 - 0x00007ffdf4231000 	C:\Windows\System32\USER32.dll
+0x00007ffde72e0000 - 0x00007ffde757b000 	C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256\COMCTL32.dll
+0x00007ffdf3a30000 - 0x00007ffdf3a52000 	C:\Windows\System32\win32u.dll
+0x00007ffdf5cd0000 - 0x00007ffdf5d6e000 	C:\Windows\System32\msvcrt.dll
+0x00007ffdf4d50000 - 0x00007ffdf4d7b000 	C:\Windows\System32\GDI32.dll
+0x00007ffdf3600000 - 0x00007ffdf3719000 	C:\Windows\System32\gdi32full.dll
+0x00007ffdf3850000 - 0x00007ffdf38ed000 	C:\Windows\System32\msvcp_win.dll
+0x00007ffdf5350000 - 0x00007ffdf537f000 	C:\Windows\System32\IMM32.DLL
+0x00007ffdf3370000 - 0x00007ffdf33bb000 	C:\Windows\SYSTEM32\AvCNG.dll
+0x00007ffdf4c90000 - 0x00007ffdf4d41000 	C:\Windows\System32\ADVAPI32.dll
+0x00007ffdf4f50000 - 0x00007ffdf4fef000 	C:\Windows\System32\sechost.dll
+0x00007ffdf4d80000 - 0x00007ffdf4ea0000 	C:\Windows\System32\RPCRT4.dll
+0x00007ffdf3820000 - 0x00007ffdf3847000 	C:\Windows\System32\bcrypt.dll
+0x00007ffdf3220000 - 0x00007ffdf32b5000 	C:\Program Files\Common Files\Avest\Avest CSP\avsspc.dll
+0x00007ffdf5ba0000 - 0x00007ffdf5bfb000 	C:\Windows\System32\SHLWAPI.dll
+0x00007ffdd9870000 - 0x00007ffdd987c000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\vcruntime140_1.dll
+0x00007ffdb88f0000 - 0x00007ffdb897d000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\msvcp140.dll
+0x00007ffd7be40000 - 0x00007ffd7cbe2000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\server\jvm.dll
+0x00007ffdf5d70000 - 0x00007ffdf5ddb000 	C:\Windows\System32\WS2_32.dll
+0x00007ffdf33e0000 - 0x00007ffdf342b000 	C:\Windows\SYSTEM32\POWRPROF.dll
+0x00007ffdec1a0000 - 0x00007ffdec1aa000 	C:\Windows\SYSTEM32\VERSION.dll
+0x00007ffde4910000 - 0x00007ffde4937000 	C:\Windows\SYSTEM32\WINMM.dll
+0x00007ffdf33c0000 - 0x00007ffdf33d2000 	C:\Windows\SYSTEM32\UMPDC.dll
+0x00007ffdf1300000 - 0x00007ffdf1312000 	C:\Windows\SYSTEM32\kernel.appcore.dll
+0x00007ffdcd700000 - 0x00007ffdcd70a000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\jimage.dll
+0x00007ffde57f0000 - 0x00007ffde59f1000 	C:\Windows\SYSTEM32\DBGHELP.DLL
+0x00007ffdd70b0000 - 0x00007ffdd70e4000 	C:\Windows\SYSTEM32\dbgcore.DLL
+0x00007ffdf38f0000 - 0x00007ffdf3972000 	C:\Windows\System32\bcryptPrimitives.dll
+0x00007ffdb9750000 - 0x00007ffdb9770000 	C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\java.dll
+
+JVMTI agents: none
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin;C:\Windows\SYSTEM32;C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256;C:\Program Files\Common Files\Avest\Avest CSP;C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin\server
+
+VM Arguments:
+java_command: C:\Users\USER\.gradle\caches\modules-2\files-2.1\net.neoforged.installertools\installertools\2.1.2\62740d5aa8f75f4a4d542d363bdda5b64a198f7a\installertools-2.1.2-fatjar.jar --task MERGE_MAPPING --left config\joined.tsrg --right C:\Users\USER\.gradle\caches\neoformruntime\artifacts\minecraft_1.21.1_client_mappings.txt --right-names right,left --classes --fields --methods --output ./output.tsrg
+java_class_path (initial): C:\Users\USER\.gradle\caches\modules-2\files-2.1\net.neoforged.installertools\installertools\2.1.2\62740d5aa8f75f4a4d542d363bdda5b64a198f7a\installertools-2.1.2-fatjar.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 3                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 10                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 1048576                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 123731968                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 1965031424                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 1048576                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5839372                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122909434                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122909434                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 1965031424                             {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Release file:
+<release file has not been read>
+Environment Variables:
+JAVA_HOME=C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\
+PATH=C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Avest\AvPCM_nces;C:\Program Files (x86)\dotnet\;C:\Program Files\dotnet\;C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot\bin;C:\Users\USER\AppData\Local\Programs\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin;D:\ga\bin;C:\Users\USER\AppData\Local\Microsoft\WindowsApps;C:\Users\USER\AppData\Local\Python\bin
+USERNAME=USER
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD
+TMP=C:\Users\USER\AppData\Local\Temp
+TEMP=C:\Users\USER\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+OS uptime: 0 days 0:41 hours
+
+CPU: total 12 (initial active 12) (12 cores per cpu, 2 threads per core) family 23 model 104 stepping 1 microcode 0x0, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4a, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, clmul, bmi1, bmi2, adx, sha, fma, vzeroupper, clflush, clflushopt, rdtscp, rdpid, f16c
+Processor Information for the first 12 processors :
+  Max Mhz: 2100, Current Mhz: 2100, Mhz Limit: 2100
+
+Memory: 4k page, system-wide physical 7488M (292M free)
+TotalPageFile size 9536M (AvailPageFile size 19M)
+current process WorkingSet (physical memory assigned to process): 11M, peak: 11M
+current process commit charge ("private bytes"): 64M, peak: 182M
+
+vm_info: OpenJDK 64-Bit Server VM (21.0.11+10-LTS) for windows-amd64 JRE (21.0.11+10-LTS), built on 2026-04-21T00:00:00Z by "admin" with MS VC++ 17.12 (VS2022)
+
+END.

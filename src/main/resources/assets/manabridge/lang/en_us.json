@@ -1,0 +1,13 @@
+{
+  "itemGroup.manabridge": "Example Mod Tab",
+  "block.manabridge.example_block": "Example Block",
+  "item.manabridge.example_item": "Example Item",
+
+  "manabridge.configuration.title": "Mana Bridge Configs",
+  "manabridge.configuration.section.manabridge.common.toml": "Mana Bridge Configs",
+  "manabridge.configuration.section.manabridge.common.toml.title": "Mana Bridge Configs",
+  "manabridge.configuration.items": "Item List",
+  "manabridge.configuration.logDirtBlock": "Log Dirt Block",
+  "manabridge.configuration.magicNumberIntroduction": "Magic Number Text",
+  "manabridge.configuration.magicNumber": "Magic Number"
+}

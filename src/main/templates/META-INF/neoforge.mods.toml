@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+
+[[mods]]
+modId = "manabridge"
+version = "1.0.0"
+displayName = "Mana Bridge"
+authors = "clay"
+description = '''Merges mana from Ars Nouveau and Iron's Spells'''
+license = "MIT"
+
+[[dependencies.manabridge]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.manabridge]]
+modId = "ars_nouveau"
+mandatory = true
+versionRange = "[1.21.1,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.manabridge]]
+modId = "irons_spellbooks"
+mandatory = true
+versionRange = "[1.21.1,)"
+ordering = "AFTER"
+side = "BOTH"
