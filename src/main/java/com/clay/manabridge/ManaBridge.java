@@ -8,6 +8,10 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
 
@@ -18,15 +22,55 @@ public class ManaBridge {
 
     public ManaBridge(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-
+        
+        // Синхронизация текущей маны каждый тик
         NeoForge.EVENT_BUS.addListener(this::onPlayerTick);
-
+        
+        // События для обновления максимума
+        NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
+        NeoForge.EVENT_BUS.addListener(this::onEquipmentChange);
+        NeoForge.EVENT_BUS.addListener(this::onEffectAdded);
+        NeoForge.EVENT_BUS.addListener(this::onEffectRemoved);
+        NeoForge.EVENT_BUS.addListener(this::onItemUseFinish);
+        
         LOGGER.info("Mana Bridge initialized!");
     }
 
     private void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity().level().isClientSide()) return;
-
-        ManaSyncManager.tick(event.getEntity());
+        ManaSyncManager.syncCurrentMana(event.getEntity());
+    }
+    
+    private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
+        ManaSyncManager.updateMaxMana(event.getEntity());
+    }
+    
+    private void onEquipmentChange(LivingEquipmentChangeEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            ManaSyncManager.updateMaxMana(player);
+        }
+    }
+    
+    private void onEffectAdded(MobEffectEvent.Added event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            ManaSyncManager.updateMaxMana(player);
+        }
+    }
+    
+    private void onEffectRemoved(MobEffectEvent.Remove event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            ManaSyncManager.updateMaxMana(player);
+        }
+    }
+    
+    private void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            ManaSyncManager.updateMaxMana(player);
+        }
     }
 }
