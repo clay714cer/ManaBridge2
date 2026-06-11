@@ -15,61 +15,83 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ManaSyncManager {
-    private static final Map<UUID, Double> lastManaValues = new HashMap<>();
-    private static final Map<UUID, Double> lastMaxManaValues = new HashMap<>();
+    private static final Map<UUID, Double> lastCurrentMana = new HashMap<>();
+    private static final Map<UUID, Integer> nativeArsMaxMana = new HashMap<>();
     private static int tickCounter = 0;
     
-    public static void tick(Player player) {
+    // === ОБНОВЛЕНИЕ МАКСИМУМА (по событиям) ===
+    public static void updateMaxMana(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        
-        if (Config.BATCH_UPDATE.get()) {
-            tickCounter++;
-            if (tickCounter < 20) return;
-            tickCounter = 0;
-        }
         
         UUID playerId = player.getUUID();
         
-        // 1. Расчёт общей максимальной маны по формуле
-        double arsMaxMana = getArsMaxMana(player);
-        double ironsMaxMana = getIronsMaxMana(serverPlayer);
-        double sharedMaxMana = calculateSharedValue(arsMaxMana, ironsMaxMana);
+        // Получаем родные максимумы
+        int arsMax = getArsMaxMana(player);
+        double ironsMax = getIronsMaxMana(serverPlayer);
         
-        // 2. Ограничение максимальной маны
+        // Сохраняем родной максимум Ars
+        nativeArsMaxMana.put(playerId, arsMax);
+        
+        // Считаем общий максимум
+        double totalMax = arsMax * Config.K_ARS_MAX.get() + ironsMax * Config.K_IRONS_MAX.get();
+        
         double maxManaCap = Config.MAX_MANA_CAP.get();
-        if (maxManaCap > 0 && sharedMaxMana > maxManaCap) {
-            sharedMaxMana = maxManaCap;
+        if (maxManaCap > 0 && totalMax > maxManaCap) {
+            totalMax = maxManaCap;
         }
         
-        // 3. Применяем общую максимальную ману к обоим модам
-        setArsMaxMana(player, (int) sharedMaxMana);
-        setIronsMaxMana(serverPlayer, sharedMaxMana);
+        // Устанавливаем общий максимум в оба мода
+        setArsMaxMana(player, (int) totalMax);
+        setIronsMaxMana(serverPlayer, totalMax);
         
-        // 4. Расчёт текущей общей маны
+        ManaBridge.LOGGER.debug("Max mana updated: Ars={}, Iron's={}, Total={}", arsMax, ironsMax, totalMax);
+    }
+    
+    // === СИНХРОНИЗАЦИЯ ТЕКУЩЕЙ МАНЫ (каждый тик) ===
+    public static void syncCurrentMana(Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        
+        // Частота синхронизации из конфига
+        tickCounter++;
+        int interval = Config.CURRENT_MANA_SYNC_INTERVAL.get();
+        if (interval > 0 && tickCounter % interval != 0) return;
+        
+        UUID playerId = player.getUUID();
+        
         double arsMana = getArsMana(player);
         double ironsMana = getIronsMana(player);
-        double sharedMana = calculateSharedValue(arsMana, ironsMana);
+        int arsMax = getArsMaxMana(player);
+        double ironsMax = getIronsMaxMana(serverPlayer);
         
-        // 5. Проверка на изменение
+        if (arsMax <= 0 || ironsMax <= 0) return;
+        
+        // Считаем общую текущую ману
+        double sharedCurrent = arsMana * Config.K_ARS_CURRENT.get() + ironsMana * Config.K_IRONS_CURRENT.get();
+        
+        // Ограничения
+        double totalMax = arsMax + ironsMax;
+        if (sharedCurrent > totalMax) sharedCurrent = totalMax;
+        if (sharedCurrent < 0) sharedCurrent = 0;
+        
+        double maxManaCap = Config.MAX_MANA_CAP.get();
+        if (maxManaCap > 0 && sharedCurrent > maxManaCap) {
+            sharedCurrent = maxManaCap;
+        }
+        
+        // Проверка на изменение
         if (Config.UPDATE_ON_CHANGE_ONLY.get()) {
-            Double lastMana = lastManaValues.get(playerId);
-            if (lastMana != null && Math.abs(lastMana - sharedMana) < 0.01) {
+            Double last = lastCurrentMana.get(playerId);
+            if (last != null && Math.abs(last - sharedCurrent) < 0.5) {
                 return;
             }
         }
         
-        // 6. Ограничение текущей маны
-        if (sharedMana > sharedMaxMana) {
-            sharedMana = sharedMaxMana;
-        }
-        
-        // 7. Синхронизация
+        // Применяем
         String direction = Config.SYNC_DIRECTION.get();
-        
         switch (direction) {
             case "both":
-                setArsMana(player, sharedMana);
-                setIronsMana(player, sharedMana);
+                setArsMana(player, sharedCurrent);
+                setIronsMana(player, sharedCurrent);
                 break;
             case "ars_to_irons":
                 setIronsMana(player, arsMana);
@@ -79,94 +101,64 @@ public class ManaSyncManager {
                 break;
         }
         
-        lastManaValues.put(playerId, sharedMana);
+        lastCurrentMana.put(playerId, sharedCurrent);
     }
     
-    // Общая формула для расчёта
-    private static double calculateSharedValue(double arsValue, double ironsValue) {
-        double kArs = Config.K_ARS.get();
-        double kIrons = Config.K_IRONS.get();
-        double n = Config.N_VALUE.get();
-        return (arsValue * kArs) + (ironsValue * kIrons) - n;
-    }
-    
-    // === Ars Nouveau ===
+    // === ARS NOUVEAU ===
     private static double getArsMana(Player player) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
-            if (manaCap != null) return manaCap.getCurrentMana();
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error getting Ars mana: ", e);
-        }
-        return 0.0;
+            return manaCap != null ? manaCap.getCurrentMana() : 0;
+        } catch (Exception e) { return 0; }
     }
     
-    private static double getArsMaxMana(Player player) {
+    private static int getArsMaxMana(Player player) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
-            if (manaCap != null) return manaCap.getMaxMana();
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error getting Ars max mana: ", e);
-        }
-        return 0.0;
+            return manaCap != null ? manaCap.getMaxMana() : 100;
+        } catch (Exception e) { return 100; }
     }
     
     private static void setArsMana(Player player, double amount) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
             if (manaCap != null) manaCap.setMana(amount);
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error setting Ars mana: ", e);
-        }
+        } catch (Exception e) {}
     }
     
-    private static void setArsMaxMana(Player player, int maxMana) {
+    private static void setArsMaxMana(Player player, int max) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
-            if (manaCap != null) manaCap.setMaxMana(maxMana);
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error setting Ars max mana: ", e);
-        }
+            if (manaCap != null) manaCap.setMaxMana(max);
+        } catch (Exception e) {}
     }
     
-    // === Iron's Spells ===
+    // === IRON'S SPELLS ===
     private static double getIronsMana(Player player) {
         try {
             MagicData magicData = MagicData.getPlayerMagicData(player);
-            if (magicData != null) return magicData.getMana();
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error getting Iron's mana: ", e);
-        }
-        return 0.0;
+            return magicData != null ? magicData.getMana() : 0;
+        } catch (Exception e) { return 0; }
     }
     
     private static double getIronsMaxMana(ServerPlayer player) {
         try {
             AttributeInstance attr = player.getAttribute(AttributeRegistry.MAX_MANA);
-            if (attr != null) return attr.getValue();
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error getting Iron's max mana: ", e);
-        }
-        return 0.0;
+            return attr != null ? attr.getValue() : 200;
+        } catch (Exception e) { return 200; }
     }
     
     private static void setIronsMana(Player player, double amount) {
         try {
             MagicData magicData = MagicData.getPlayerMagicData(player);
             if (magicData != null) magicData.setMana((float) amount);
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error setting Iron's mana: ", e);
-        }
+        } catch (Exception e) {}
     }
     
-    private static void setIronsMaxMana(ServerPlayer player, double maxMana) {
+    private static void setIronsMaxMana(ServerPlayer player, double max) {
         try {
             AttributeInstance attr = player.getAttribute(AttributeRegistry.MAX_MANA);
-            if (attr != null) {
-                attr.setBaseValue(maxMana);
-            }
-        } catch (Exception e) {
-            ManaBridge.LOGGER.error("Error setting Iron's max mana: ", e);
-        }
+            if (attr != null) attr.setBaseValue(max);
+        } catch (Exception e) {}
     }
 }
