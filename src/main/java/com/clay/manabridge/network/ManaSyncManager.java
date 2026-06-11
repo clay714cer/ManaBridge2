@@ -6,7 +6,6 @@ import com.clay.manabridge.ManaBridge;
 import com.clay.manabridge.config.Config;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -141,12 +140,19 @@ public class ManaSyncManager {
         } catch (Exception e) { return 0; }
     }
     
-    private static double getIronsMaxMana(ServerPlayer player) {
-        try {
-            AttributeInstance attr = player.getAttribute(AttributeRegistry.MAX_MANA);
-            return attr != null ? attr.getValue() : 200;
-        } catch (Exception e) { return 200; }
+private static double getIronsMaxMana(ServerPlayer player) {
+    try {
+        var attr = player.getAttributes().getInstance(
+            net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.get(
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
+            )
+        );
+        return attr != null ? attr.getValue() : 200;
+    } catch (Exception e) {
+        ManaBridge.LOGGER.error("Error getting Iron's max mana: ", e);
+        return 200;
     }
+}
     
     private static void setIronsMana(Player player, double amount) {
         try {
@@ -155,10 +161,18 @@ public class ManaSyncManager {
         } catch (Exception e) {}
     }
     
-    private static void setIronsMaxMana(ServerPlayer player, double max) {
-        try {
-            AttributeInstance attr = player.getAttribute(AttributeRegistry.MAX_MANA);
-            if (attr != null) attr.setBaseValue(max);
-        } catch (Exception e) {}
+private static void setIronsMaxMana(ServerPlayer player, double max) {
+    try {
+        var attr = player.getAttributes().getInstance(
+            net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.get(
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
+            )
+        );
+        if (attr != null) {
+            attr.setBaseValue(max);
+        }
+    } catch (Exception e) {
+        ManaBridge.LOGGER.error("Error setting Iron's max mana: ", e);
     }
+}
 }
