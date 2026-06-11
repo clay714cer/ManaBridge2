@@ -27,7 +27,6 @@ public class ManaSyncManager {
         // Запоминаем родные значения Iron's ТОЛЬКО если ещё не запомнили
         if (!storedNativeIronsMax.containsKey(playerId)) {
             double nativeMax = getRawIronsMax(player);
-            double nativeRegen = getRawIronsRegen(player);
             storedNativeIronsMax.put(playerId, nativeMax);
             storedNativeIronsRegen.put(playerId, nativeRegen);
         }
@@ -212,7 +211,7 @@ public class ManaSyncManager {
         double totalMax = getIronsMaxMana(player);
         double ironsMana = getIronsMana(player);
         
-        double regenPerSecond = (totalMax * nativeRegen * 0.01) * 20;
+       double regenPerSecond = (totalMax * 0.01) * 20; // 1% от макс в тик × 20 тиков
         
         source.sendSuccess(() -> 
             net.minecraft.network.chat.Component.literal(
