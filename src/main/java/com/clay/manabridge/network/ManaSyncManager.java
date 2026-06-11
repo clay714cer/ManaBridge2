@@ -143,9 +143,7 @@ public static void syncCurrentMana(ServerPlayer player) {
 private static double getIronsMaxMana(ServerPlayer player) {
     try {
         var attr = player.getAttributes().getInstance(
-            net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.get(
-                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
-            )
+            io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
         );
         return attr != null ? attr.getValue() : 200;
     } catch (Exception e) {
@@ -164,9 +162,7 @@ private static double getIronsMaxMana(ServerPlayer player) {
 private static void setIronsMaxMana(ServerPlayer player, double max) {
     try {
         var attr = player.getAttributes().getInstance(
-            net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.get(
-                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
-            )
+            io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA
         );
         if (attr != null) {
             attr.setBaseValue(max);
