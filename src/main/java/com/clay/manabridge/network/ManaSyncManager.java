@@ -24,9 +24,9 @@ public class ManaSyncManager {
     public static void initMaxMana(ServerPlayer player) {
         UUID playerId = player.getUUID();
         
-        // Запоминаем родные значения Iron's ТОЛЬКО если ещё не запомнили
         if (!storedNativeIronsMax.containsKey(playerId)) {
-            double nativeMax = getRawIronsMax(player);
+            double nativeMax = getIronsMaxMana(player);
+            double nativeRegen = getRawIronsRegen(player);
             storedNativeIronsMax.put(playerId, nativeMax);
             storedNativeIronsRegen.put(playerId, nativeRegen);
         }
