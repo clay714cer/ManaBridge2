@@ -37,8 +37,7 @@ public class ManaSyncManager {
         UUID playerId = player.getUUID();
         
         if (!storedNativeIronsMax.containsKey(playerId)) {
-            double nativeMax = getIronsMaxMana(player);
-            if (nativeMax > 500) nativeMax = 100;
+            double nativeMax = 100;
             double nativeRegen = getRawIronsRegen(player);
             storedNativeIronsMax.put(playerId, nativeMax);
             storedNativeIronsRegen.put(playerId, nativeRegen);
