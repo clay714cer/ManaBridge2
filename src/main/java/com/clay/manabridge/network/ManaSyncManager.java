@@ -30,7 +30,7 @@ public class ManaSyncManager {
     
     private static int tickCounter = 0;
     private static final int ARS_FIXED_MAX = 100;
-    private static final double ARS_BASE_REGEN = 2.0; // Базовая регенерация Ars
+    private static final double ARS_BASE_REGEN = 3.0; // Базовая регенерация Ars
     
     // === ИНИЦИАЛИЗАЦИЯ ===
     public static void onPlayerLogin(ServerPlayer player) {
