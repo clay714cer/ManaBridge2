@@ -11,6 +11,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 @Mod(ManaBridge.MODID)
@@ -19,7 +20,7 @@ public class ManaBridge {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public ManaBridge(IEventBus modEventBus, ModContainer modContainer) {
-      modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         
         NeoForge.EVENT_BUS.addListener(this::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
@@ -31,28 +32,28 @@ public class ManaBridge {
 
     private void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             ManaSyncManager.syncCurrentMana(player);
         }
     }
     
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-    ManaSyncManager.updateMaxMana(player);
-}
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ManaSyncManager.updateMaxMana(player);
+        }
     }
     
     private void onEffectAdded(MobEffectEvent.Added event) {
         if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             ManaSyncManager.updateMaxMana(player);
         }
     }
     
     private void onEffectRemoved(MobEffectEvent.Remove event) {
         if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             ManaSyncManager.updateMaxMana(player);
         }
     }
