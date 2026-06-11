@@ -13,39 +13,35 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ManaSyncManager {
-    // Синхронизация
+    // Отслеживание изменений
+    private static final Map<UUID, Double> lastArsMana = new HashMap<>();
     private static final Map<UUID, Double> lastIronsMana = new HashMap<>();
-    private static final Map<UUID, Double> lastArsPercent = new HashMap<>();
     
-    // Родные значения Iron's
-    private static final Map<UUID, Double> storedNativeIronsMax = new HashMap<>();
+    // Родные значения
     private static final Map<UUID, Double> storedNativeIronsRegen = new HashMap<>();
+    private static final Map<UUID, Double> storedNativeIronsMax = new HashMap<>();
     
     // Умный мониторинг регенерации Ars
     private static final Map<UUID, Double> arsRegenMeasurements = new HashMap<>();
     private static final Map<UUID, Double> stableArsRegenBonus = new HashMap<>();
-    private static final Map<UUID, Integer> regenMeasurementCount = new HashMap<>();
     private static final Map<UUID, Integer> regenSameCount = new HashMap<>();
     private static final Map<UUID, Boolean> regenMonitoringActive = new HashMap<>();
     
     private static int tickCounter = 0;
-    private static final int ARS_FIXED_MAX = 100;
-    private static final double ARS_BASE_REGEN = 3.0; // Базовая регенерация Ars
+    private static final double ARS_BASE_REGEN = 3.0;
     
     // === ИНИЦИАЛИЗАЦИЯ ===
     public static void onPlayerLogin(ServerPlayer player) {
         UUID playerId = player.getUUID();
         
         if (!storedNativeIronsMax.containsKey(playerId)) {
-            double nativeMax = 100;
+            storedNativeIronsMax.put(playerId, 100.0);
             double nativeRegen = getRawIronsRegen(player);
-            storedNativeIronsMax.put(playerId, nativeMax);
             storedNativeIronsRegen.put(playerId, nativeRegen);
         }
         
         regenMonitoringActive.put(playerId, true);
         regenSameCount.put(playerId, 0);
-        regenMeasurementCount.put(playerId, 0);
         
         applyMaxMana(player);
     }
@@ -58,7 +54,8 @@ public class ManaSyncManager {
         
         regenMonitoringActive.put(playerId, true);
         regenSameCount.put(playerId, 0);
-        regenMeasurementCount.put(playerId, 0);
+        
+        applyMaxMana(player);
     }
     
     // === ТИК ===
@@ -71,73 +68,78 @@ public class ManaSyncManager {
             return;
         }
         
-        // Проверка экипировки Ars (раз в 5 сек)
+        // Проверка экипировки (раз в 5 сек)
         if (tickCounter % 100 == 0) {
-            checkArsBonuses(player);
+            checkEquipmentBonuses(player);
         }
         
-        // Умный мониторинг регенерации Ars (каждые 10 тиков)
+        // Мониторинг регенерации Ars (каждые 10 тиков)
         if (tickCounter % 10 == 0) {
             smartMeasureArsRegen(player);
         }
         
-        // Синхронизация текущей маны
+        // Синхронизация
         if (Config.BATCH_UPDATE.get()) {
             if (tickCounter % 10 != 0) return;
         }
         
         double ironsMana = getIronsMana(player);
-        double ironsMax = getIronsMaxMana(player);
-        if (ironsMax <= 0) return;
+        double arsMana = getArsMana(player);
         
-        double currentArsMana = getArsMana(player);
-        double currentArsPercent = ARS_FIXED_MAX > 0 ? (currentArsMana / ARS_FIXED_MAX) * 100.0 : 0;
-        double ironsPercent = ironsMax > 0 ? (ironsMana / ironsMax) * 100.0 : 0;
-        
-        Double lastPercent = lastArsPercent.get(playerId);
+        Double lastArs = lastArsMana.get(playerId);
         Double lastIrons = lastIronsMana.get(playerId);
         
-        // Отслеживание трат Ars
-        if (lastPercent != null && currentArsPercent < lastPercent - 0.1) {
-            double delta = (lastPercent - currentArsPercent) / 100.0 * ARS_FIXED_MAX;
-            ironsMana = Math.max(0, ironsMana - delta);
-            setIronsMana(player, ironsMana);
-            ironsPercent = ironsMax > 0 ? (ironsMana / ironsMax) * 100.0 : 0;
+        // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ ARS (ЧИСЛА!) ===
+        if (lastArs != null) {
+            double arsDelta = arsMana - lastArs;
+            
+            if (Math.abs(arsDelta) > 0.5) {
+                // Ars изменился → применяем к Iron's
+                double newIrons = ironsMana + arsDelta;
+                newIrons = Math.max(0, Math.min(getIronsMaxMana(player), newIrons));
+                setIronsMana(player, newIrons);
+                ironsMana = newIrons;
+            }
         }
         
-        // Отслеживание восстановления Ars
-        if (lastPercent != null && currentArsPercent > lastPercent + 0.1) {
-            double delta = (currentArsPercent - lastPercent) / 100.0 * ARS_FIXED_MAX;
-            ironsMana = Math.min(ironsMax, ironsMana + delta);
-            setIronsMana(player, ironsMana);
-            ironsPercent = ironsMax > 0 ? (ironsMana / ironsMax) * 100.0 : 0;
+        // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ IRON'S ===
+        if (lastIrons != null) {
+            double ironsDelta = ironsMana - lastIrons;
+            
+            if (Math.abs(ironsDelta) > 0.5) {
+                // Iron's изменился → применяем к Ars
+                double newArs = arsMana + ironsDelta;
+                newArs = Math.max(0, Math.min(getActualArsMax(player), newArs));
+                setArsMana(player, newArs);
+                arsMana = newArs;
+            }
         }
         
-        // Отслеживание трат Iron's
-        if (lastIrons != null && ironsMana < lastIrons - 0.5) {
-            syncArsFromPercent(player, ironsPercent);
-            currentArsPercent = ironsPercent;
-        }
-        
-        // Проверка на изменение
+        // Проверка на изменение (оптимизация)
         if (Config.UPDATE_ON_CHANGE_ONLY.get()) {
-            if (lastPercent != null && lastIrons != null) {
-                if (Math.abs(currentArsPercent - lastPercent) < 0.5 && Math.abs(ironsMana - lastIrons) < 0.5) {
+            if (lastArs != null && lastIrons != null) {
+                if (Math.abs(arsMana - lastArs) < 0.5 && Math.abs(ironsMana - lastIrons) < 0.5) {
                     return;
                 }
             }
         }
         
-        // Синхронизация
+        // Синхронизация по направлению
         String direction = Config.SYNC_DIRECTION.get();
         switch (direction) {
-            case "both" -> syncArsFromPercent(player, ironsPercent);
-            case "ars_to_irons" -> setIronsMana(player, (currentArsPercent / 100.0) * ironsMax);
-            case "irons_to_ars" -> syncArsFromPercent(player, ironsPercent);
+            case "both":
+                // Уже синхронизировано выше
+                break;
+            case "ars_to_irons":
+                setIronsMana(player, arsMana);
+                break;
+            case "irons_to_ars":
+                setArsMana(player, ironsMana);
+                break;
         }
         
+        lastArsMana.put(playerId, arsMana);
         lastIronsMana.put(playerId, ironsMana);
-        lastArsPercent.put(playerId, ironsPercent);
     }
     
     // === УМНЫЙ МОНИТОРИНГ РЕГЕНЕРАЦИИ ARS ===
@@ -173,31 +175,24 @@ public class ManaSyncManager {
         arsRegenMeasurements.put(playerId, currentArsMana);
     }
     
-    // === ПРОВЕРКА БОНУСОВ ARS ===
-    private static void checkArsBonuses(ServerPlayer player) {
-        UUID playerId = player.getUUID();
-        int realArsMax = getActualArsMax(player);
-        double nativeIrons = storedNativeIronsMax.getOrDefault(playerId, 100.0);
-        double bonusFromArs = Math.max(0, realArsMax - ARS_FIXED_MAX);
-        double totalMax = calculateMax(ARS_FIXED_MAX, nativeIrons + bonusFromArs);
-        setIronsMaxMana(player, totalMax);
+    // === ПРОВЕРКА БОНУСОВ ЭКИПИРОВКИ ===
+    private static void checkEquipmentBonuses(ServerPlayer player) {
+        applyMaxMana(player);
     }
     
     // === ПРИМЕНЕНИЕ МАКСИМУМА ===
     private static void applyMaxMana(ServerPlayer player) {
         UUID playerId = player.getUUID();
-        double nativeMax = storedNativeIronsMax.getOrDefault(playerId, 100.0);
-        double totalMax = calculateMax(ARS_FIXED_MAX, nativeMax);
+        
+        int arsMax = getActualArsMax(player);
+        double ironsMax = storedNativeIronsMax.getOrDefault(playerId, 100.0);
+        
+        double totalMax = calculateMax(arsMax, ironsMax);
         setIronsMaxMana(player, totalMax);
+        
         double currentMana = getIronsMana(player);
         if (currentMana > totalMax) setIronsMana(player, totalMax);
     }
-    
-    // === СИНХРОНИЗАЦИЯ ARS ===
-private static void syncArsFromPercent(ServerPlayer player, double percent) {
-    int realArsMax = getActualArsMax(player);
-    setArsMana(player, (percent / 100.0) * realArsMax);
-}
     
     // === РАСЧЁТ МАКСИМУМА ===
     private static double calculateMax(int arsMax, double ironsMax) {
@@ -226,13 +221,6 @@ private static void syncArsFromPercent(ServerPlayer player, double percent) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
             if (manaCap != null) manaCap.setMana(amount);
-        } catch (Exception e) {}
-    }
-    
-    private static void setArsMaxMana(ServerPlayer player, int max) {
-        try {
-            IManaCap manaCap = CapabilityRegistry.getMana(player);
-            if (manaCap != null) manaCap.setMaxMana(max);
         } catch (Exception e) {}
     }
     
@@ -280,8 +268,10 @@ private static void syncArsFromPercent(ServerPlayer player, double percent) {
         double nativeMax = storedNativeIronsMax.getOrDefault(playerId, 100.0);
         double nativeRegen = storedNativeIronsRegen.getOrDefault(playerId, 1.0);
         double arsBonus = stableArsRegenBonus.getOrDefault(playerId, 0.0);
+        int arsMax = getActualArsMax(player);
         double totalMax = getIronsMaxMana(player);
         double ironsMana = getIronsMana(player);
+        double arsMana = getArsMana(player);
         double regenPerTick = (totalMax * nativeRegen * 0.01) + arsBonus;
         
         source.sendSuccess(() -> 
@@ -290,8 +280,9 @@ private static void syncArsFromPercent(ServerPlayer player, double percent) {
                 "§bОбщий максимум: §f" + String.format("%.0f", totalMax) + "\n" +
                 "§bТекущая мана: §f" + String.format("%.0f", ironsMana) + "/" + String.format("%.0f", totalMax) + "\n" +
                 "§bРегенерация: §f" + String.format("%.1f", regenPerTick) + "/раз\n" +
-                "§bОт Ars: §f+" + ARS_FIXED_MAX + " макс, +" + String.format("%.1f", arsBonus) + " реген\n" +
-                "§bОт Iron's: §f+" + String.format("%.0f", nativeMax) + " макс, ×" + String.format("%.2f", nativeRegen) + " реген\n" +
+                "§bArs макс: §f" + arsMax + " | §bТекущая: §f" + String.format("%.0f", arsMana) + "\n" +
+                "§bIron's родной: §f" + String.format("%.0f", nativeMax) + " | §bРеген: §f×" + String.format("%.2f", nativeRegen) + "\n" +
+                "§bБонус регена Ars: §f+" + String.format("%.1f", arsBonus) + "\n" +
                 "§bМножители: §fArs ×" + Config.K_ARS.get() + ", Iron's ×" + Config.K_IRONS.get()
             ), false
         );
