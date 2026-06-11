@@ -168,11 +168,13 @@ public class ManaSyncManager {
         } catch (Exception e) {}
     }
     
-    private static void setIronsMaxMana(ServerPlayer player, double max) {
+      private static void setIronsMaxMana(ServerPlayer player, double max) {
         try {
             var attr = player.getAttributes().getInstance(AttributeRegistry.MAX_MANA);
             if (attr != null) attr.setBaseValue(max);
         } catch (Exception e) {}
+    }
+    
     // === КОМАНДА ИНФО ===
     public static void showManaInfo(ServerPlayer player, net.minecraft.commands.CommandSourceStack source) {
         UUID playerId = player.getUUID();
@@ -192,6 +194,4 @@ public class ManaSyncManager {
             ), false
         );
     }
-    }
 }
- 
