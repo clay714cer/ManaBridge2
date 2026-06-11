@@ -42,14 +42,14 @@ public class ManaBridge {
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof ServerPlayer player) {
-            ManaSyncManager.initMaxMana(player);
+            ManaSyncManager.onPlayerLogin(player);
         }
     }
     
     private void onEffectChanged(MobEffectEvent.Added event) {
         if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof ServerPlayer player) {
-            ManaSyncManager.initMaxMana(player);
+            ManaSyncManager.onEquipmentChanged(player);
         }
     }
     
