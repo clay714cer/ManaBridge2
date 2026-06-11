@@ -23,7 +23,7 @@ public class ManaSyncManager {
     public static void initMaxMana(ServerPlayer player) {
         UUID playerId = player.getUUID();
         
-        int arsMax = getNativeArsMax(player);
+        int arsMax = 100; // Фиксированный максимум Ars для расчёта затрат
         double ironsMax = getNativeIronsMaxMana(player);
         
         nativeArsMax.put(playerId, arsMax);
@@ -32,7 +32,6 @@ public class ManaSyncManager {
         double totalMax = calculateMax(arsMax, ironsMax);
         setIronsMaxMana(player, totalMax);
         
-        // Установим текущую ману пропорционально
         double currentIrons = getIronsMana(player);
         if (currentIrons > totalMax) {
             setIronsMana(player, totalMax);
@@ -42,6 +41,11 @@ public class ManaSyncManager {
     // === ТИК СИНХРОНИЗАЦИИ ===
     public static void tick(ServerPlayer player) {
         tickCounter++;
+        
+        // Проверка изменений максимумов (раз в секунду)
+        if (tickCounter % 20 == 0) {
+            checkForMaxChanges(player);
+        }
         
         if (Config.BATCH_UPDATE.get()) {
             if (tickCounter % 10 != 0) return;
@@ -106,6 +110,28 @@ public class ManaSyncManager {
         lastArsPercent.put(playerId, ironsPercent);
     }
     
+    // === ПРОВЕРКА ИЗМЕНЕНИЙ МАКСИМУМОВ ===
+    private static void checkForMaxChanges(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        
+        int arsMax = 100; // Фиксированный максимум Ars
+        double currentIronsMax = getNativeIronsMaxMana(player);
+        
+        double oldIronsMax = nativeIronsMax.getOrDefault(playerId, 200.0);
+        
+        if (Math.abs(currentIronsMax - oldIronsMax) > 0.5) {
+            nativeIronsMax.put(playerId, currentIronsMax);
+            
+            double totalMax = calculateMax(arsMax, currentIronsMax);
+            setIronsMaxMana(player, totalMax);
+            
+            double currentMana = getIronsMana(player);
+            if (currentMana > totalMax) {
+                setIronsMana(player, totalMax);
+            }
+        }
+    }
+    
     // === СИНХРОНИЗАЦИЯ ARS ИЗ ПРОЦЕНТОВ ===
     private static void syncArsFromPercent(ServerPlayer player, double percent, int arsMax) {
         double arsValue = (percent / 100.0) * arsMax;
@@ -128,13 +154,6 @@ public class ManaSyncManager {
     }
     
     // === ARS NOUVEAU ===
-    private static int getNativeArsMax(ServerPlayer player) {
-        try {
-            IManaCap manaCap = CapabilityRegistry.getMana(player);
-            return manaCap != null ? manaCap.getMaxMana() : 100;
-        } catch (Exception e) { return 100; }
-    }
-    
     private static double getArsMana(ServerPlayer player) {
         try {
             IManaCap manaCap = CapabilityRegistry.getMana(player);
@@ -193,17 +212,22 @@ public class ManaSyncManager {
         double totalMax = getIronsMaxMana(player);
         double ironsMana = getIronsMana(player);
         
-        // Расчёт регенерации
-        double ironsRegen = player.getAttribute(AttributeRegistry.MANA_REGEN) != null ? 
-            player.getAttributeValue(AttributeRegistry.MANA_REGEN) : 0;
+        // Регенерация в числах
+        double ironsRegenPercent = 0;
+        var regenAttr = player.getAttribute(AttributeRegistry.MANA_REGEN);
+        if (regenAttr != null) {
+            ironsRegenPercent = regenAttr.getValue();
+        }
+        double regenPerTick = (totalMax * ironsRegenPercent * 0.01);
+        double regenPerSecond = regenPerTick * 20;
         
         source.sendSuccess(() -> 
             net.minecraft.network.chat.Component.literal(
                 "§6=== Mana Bridge Info ===\n" +
                 "§bОбщий максимум: §f" + String.format("%.0f", totalMax) + "\n" +
                 "§bТекущая мана: §f" + String.format("%.0f", ironsMana) + "/" + String.format("%.0f", totalMax) + "\n" +
-                "§bРегенерация: §f" + String.format("%.1f", ironsRegen * 100) + "% /тик\n" +
-                "§bОт Ars: §f+" + arsMax + " макс (родной)\n" +
+                "§bРегенерация: §f" + String.format("%.1f", regenPerSecond) + "/сек\n" +
+                "§bОт Ars: §f+" + arsMax + " макс (фикс.)\n" +
                 "§bОт Iron's: §f+" + String.format("%.0f", ironsMaxNative) + " макс (родной)\n" +
                 "§bМножители: §fArs ×" + Config.K_ARS.get() + ", Iron's ×" + Config.K_IRONS.get()
             ), false
