@@ -12,7 +12,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
 
@@ -29,7 +28,6 @@ public class ManaBridge {
         NeoForge.EVENT_BUS.addListener(this::onEquipmentChange);
         NeoForge.EVENT_BUS.addListener(this::onEffectAdded);
         NeoForge.EVENT_BUS.addListener(this::onEffectRemoved);
-        NeoForge.EVENT_BUS.addListener(this::onItemUseFinish);
         
         LOGGER.info("Mana Bridge initialized!");
     }
@@ -37,8 +35,8 @@ public class ManaBridge {
     private void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-    ManaSyncManager.syncCurrentMana(player);
-};
+            ManaSyncManager.syncCurrentMana(player);
+        }
     }
     
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -61,13 +59,6 @@ public class ManaBridge {
     }
     
     private void onEffectRemoved(MobEffectEvent.Remove event) {
-        if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-            ManaSyncManager.updateMaxMana(player);
-        }
-    }
-    
-    private void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
         if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             ManaSyncManager.updateMaxMana(player);
