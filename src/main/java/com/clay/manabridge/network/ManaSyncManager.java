@@ -181,7 +181,6 @@ public class ManaSyncManager {
         double bonusFromArs = Math.max(0, realArsMax - ARS_FIXED_MAX);
         double totalMax = calculateMax(ARS_FIXED_MAX, nativeIrons + bonusFromArs);
         setIronsMaxMana(player, totalMax);
-        setArsMaxMana(player, 100);
     }
     
     // === ПРИМЕНЕНИЕ МАКСИМУМА ===
@@ -190,15 +189,15 @@ public class ManaSyncManager {
         double nativeMax = storedNativeIronsMax.getOrDefault(playerId, 100.0);
         double totalMax = calculateMax(ARS_FIXED_MAX, nativeMax);
         setIronsMaxMana(player, totalMax);
-        setArsMaxMana(player, 100);
         double currentMana = getIronsMana(player);
         if (currentMana > totalMax) setIronsMana(player, totalMax);
     }
     
     // === СИНХРОНИЗАЦИЯ ARS ===
-    private static void syncArsFromPercent(ServerPlayer player, double percent) {
-        setArsMana(player, (percent / 100.0) * ARS_FIXED_MAX);
-    }
+private static void syncArsFromPercent(ServerPlayer player, double percent) {
+    int realArsMax = getActualArsMax(player);
+    setArsMana(player, (percent / 100.0) * realArsMax);
+}
     
     // === РАСЧЁТ МАКСИМУМА ===
     private static double calculateMax(int arsMax, double ironsMax) {
