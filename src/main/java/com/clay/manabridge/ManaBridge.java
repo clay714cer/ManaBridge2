@@ -5,6 +5,7 @@ import com.clay.manabridge.network.ManaSyncManager;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
@@ -21,12 +22,9 @@ public class ManaBridge {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public ManaBridge(IEventBus modEventBus, ModContainer modContainer) {
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         
-        // Синхронизация текущей маны каждый тик
         NeoForge.EVENT_BUS.addListener(this::onPlayerTick);
-        
-        // События для обновления максимума
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(this::onEquipmentChange);
         NeoForge.EVENT_BUS.addListener(this::onEffectAdded);
