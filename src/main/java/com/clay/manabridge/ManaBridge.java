@@ -9,7 +9,6 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -25,7 +24,6 @@ public class ManaBridge {
         
         NeoForge.EVENT_BUS.addListener(this::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
-        NeoForge.EVENT_BUS.addListener(this::onEquipmentChange);
         NeoForge.EVENT_BUS.addListener(this::onEffectAdded);
         NeoForge.EVENT_BUS.addListener(this::onEffectRemoved);
         
@@ -42,13 +40,6 @@ public class ManaBridge {
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().level().isClientSide()) return;
         ManaSyncManager.updateMaxMana(event.getEntity());
-    }
-    
-    private void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        if (event.getEntity().level().isClientSide()) return;
-        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-            ManaSyncManager.updateMaxMana(player);
-        }
     }
     
     private void onEffectAdded(MobEffectEvent.Added event) {
