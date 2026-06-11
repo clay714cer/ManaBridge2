@@ -19,8 +19,8 @@ public class ManaSyncManager {
     private static int tickCounter = 0;
     
     // === ОБНОВЛЕНИЕ МАКСИМУМА (по событиям) ===
-    public static void updateMaxMana(Player player) {
-        if (!(player instanceof ServerPlayer serverPlayer)) return;
+public static void syncCurrentMana(ServerPlayer player) {
+    ServerPlayer serverPlayer = player;
         
         UUID playerId = player.getUUID();
         
