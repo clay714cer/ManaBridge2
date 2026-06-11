@@ -16,6 +16,7 @@ public class ManaSyncManager {
     private static final Map<UUID, Double> lastIronsMana = new HashMap<>();
     private static final Map<UUID, Double> lastArsPercent = new HashMap<>();
     private static final Map<UUID, Integer> nativeArsMax = new HashMap<>();
+    private static final Map<UUID, Double> nativeIronsMax = new HashMap<>();
     private static int tickCounter = 0;
     
     // === ИНИЦИАЛИЗАЦИЯ МАКСИМУМОВ ===
@@ -23,12 +24,19 @@ public class ManaSyncManager {
         UUID playerId = player.getUUID();
         
         int arsMax = getNativeArsMax(player);
-        double ironsMax = getIronsMaxMana(player);
+        double ironsMax = getNativeIronsMaxMana(player);
         
         nativeArsMax.put(playerId, arsMax);
+        nativeIronsMax.put(playerId, ironsMax);
         
         double totalMax = calculateMax(arsMax, ironsMax);
         setIronsMaxMana(player, totalMax);
+        
+        // Установим текущую ману пропорционально
+        double currentIrons = getIronsMana(player);
+        if (currentIrons > totalMax) {
+            setIronsMana(player, totalMax);
+        }
     }
     
     // === ТИК СИНХРОНИЗАЦИИ ===
@@ -47,19 +55,15 @@ public class ManaSyncManager {
         
         if (ironsMax <= 0 || arsMax <= 0) return;
         
-        // Текущий процент Ars
         double currentArsMana = getArsMana(player);
         double currentArsPercent = arsMax > 0 ? (currentArsMana / arsMax) * 100.0 : 0;
-        
-        // Процент Iron's
         double ironsPercent = ironsMax > 0 ? (ironsMana / ironsMax) * 100.0 : 0;
         
         Double lastPercent = lastArsPercent.get(playerId);
         Double lastIrons = lastIronsMana.get(playerId);
         
-               // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ ARS ===
+        // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ ARS ===
         if (lastPercent != null && currentArsPercent < lastPercent - 0.1) {
-            // Ars потратил X маны → вычитаем X из Iron's (1:1)
             double deltaArsMana = (lastPercent - currentArsPercent) / 100.0 * arsMax;
             double newIronsMana = Math.max(0, ironsMana - deltaArsMana);
             setIronsMana(player, newIronsMana);
@@ -69,7 +73,6 @@ public class ManaSyncManager {
         
         // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ IRON'S ===
         if (lastIrons != null && ironsMana < lastIrons - 0.5) {
-            // Iron's потратил ману → синхронизируем с Ars
             syncArsFromPercent(player, ironsPercent, arsMax);
             currentArsPercent = ironsPercent;
         }
@@ -121,7 +124,7 @@ public class ManaSyncManager {
             total = maxManaCap;
         }
         
-        return total;
+        return Math.max(1, total);
     }
     
     // === ARS NOUVEAU ===
@@ -147,6 +150,13 @@ public class ManaSyncManager {
     }
     
     // === IRON'S SPELLS ===
+    private static double getNativeIronsMaxMana(ServerPlayer player) {
+        try {
+            var attr = player.getAttributes().getInstance(AttributeRegistry.MAX_MANA);
+            return attr != null ? attr.getBaseValue() : 200;
+        } catch (Exception e) { return 200; }
+    }
+    
     private static double getIronsMana(ServerPlayer player) {
         try {
             MagicData magicData = MagicData.getPlayerMagicData(player);
@@ -168,7 +178,7 @@ public class ManaSyncManager {
         } catch (Exception e) {}
     }
     
-      private static void setIronsMaxMana(ServerPlayer player, double max) {
+    private static void setIronsMaxMana(ServerPlayer player, double max) {
         try {
             var attr = player.getAttributes().getInstance(AttributeRegistry.MAX_MANA);
             if (attr != null) attr.setBaseValue(max);
@@ -179,17 +189,22 @@ public class ManaSyncManager {
     public static void showManaInfo(ServerPlayer player, net.minecraft.commands.CommandSourceStack source) {
         UUID playerId = player.getUUID();
         int arsMax = nativeArsMax.getOrDefault(playerId, 100);
-        double ironsMax = getIronsMaxMana(player);
-        double totalMax = calculateMax(arsMax, ironsMax);
+        double ironsMaxNative = nativeIronsMax.getOrDefault(playerId, 200.0);
+        double totalMax = getIronsMaxMana(player);
         double ironsMana = getIronsMana(player);
+        
+        // Расчёт регенерации
+        double ironsRegen = player.getAttribute(AttributeRegistry.MANA_REGEN) != null ? 
+            player.getAttributeValue(AttributeRegistry.MANA_REGEN) : 0;
         
         source.sendSuccess(() -> 
             net.minecraft.network.chat.Component.literal(
                 "§6=== Mana Bridge Info ===\n" +
                 "§bОбщий максимум: §f" + String.format("%.0f", totalMax) + "\n" +
                 "§bТекущая мана: §f" + String.format("%.0f", ironsMana) + "/" + String.format("%.0f", totalMax) + "\n" +
+                "§bРегенерация: §f" + String.format("%.1f", ironsRegen * 100) + "% /тик\n" +
                 "§bОт Ars: §f+" + arsMax + " макс (родной)\n" +
-                "§bОт Iron's: §f+" + String.format("%.0f", ironsMax) + " макс\n" +
+                "§bОт Iron's: §f+" + String.format("%.0f", ironsMaxNative) + " макс (родной)\n" +
                 "§bМножители: §fArs ×" + Config.K_ARS.get() + ", Iron's ×" + Config.K_IRONS.get()
             ), false
         );
