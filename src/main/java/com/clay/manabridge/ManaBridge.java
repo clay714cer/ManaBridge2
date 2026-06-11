@@ -36,7 +36,9 @@ public class ManaBridge {
 
     private void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity().level().isClientSide()) return;
-        ManaSyncManager.syncCurrentMana(event.getEntity());
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+    ManaSyncManager.syncCurrentMana(player);
+};
     }
     
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
