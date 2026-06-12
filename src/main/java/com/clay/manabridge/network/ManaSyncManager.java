@@ -13,6 +13,7 @@ import java.util.UUID;
 
 public class ManaSyncManager {
     private static final Map<UUID, Double> lastArsMana = new HashMap<>();
+    private static final Map<UUID, Double> nativeIronsMax = new HashMap<>();
     private static int tickCounter = 0;
     
     public static void tick(ServerPlayer player) {
@@ -28,14 +29,18 @@ public class ManaSyncManager {
         
         if (ironsMax <= 0 || realArsMax <= 0) return;
         
+        // Сохраняем родной максимум Iron's один раз
+        if (!nativeIronsMax.containsKey(playerId)) {
+            nativeIronsMax.put(playerId, 100.0);
+        }
+        
         // Раз в 5 секунд — добавить бонус от Ars к Iron's
         if (tickCounter % 100 == 0) {
             int arsBonus = Math.max(0, realArsMax - 100);
-            if (arsBonus > 0) {
-                double newMax = ironsMax + arsBonus;
-                setIronsMaxMana(player, newMax);
-                ironsMax = newMax;
-            }
+            double baseMax = nativeIronsMax.getOrDefault(playerId, 100.0);
+            double newMax = baseMax + arsBonus;
+            setIronsMaxMana(player, newMax);
+            ironsMax = newMax;
         }
         
         Double lastArs = lastArsMana.get(playerId);
