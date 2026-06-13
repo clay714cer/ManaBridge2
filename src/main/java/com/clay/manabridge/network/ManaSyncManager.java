@@ -66,10 +66,11 @@ public class ManaSyncManager {
             setArsMana(player, ironsPercent * realArsMax);
         }
         
-        // Корректировка неполного заполнения
-        if (ironsMax - ironsMana > 0 && (ironsMax - ironsMana) / ironsMax < 0.05) {
+        
+        // Корректировка неполного заполнения (до 3% + 1 маны)
+        if (ironsMax - ironsMana > 0 && ironsMax - ironsMana < ironsMax * 0.03 + 1) {
             Double lastCheck = idleCheckMana.get(playerId);
-            if (lastCheck != null && Math.abs(ironsMana - lastCheck) < 0.01) {
+            if (lastCheck != null && Math.abs(ironsMana - lastCheck) < 0.5) {
                 int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
                 if (ticks >= 15) {
                     setIronsMana(player, ironsMax);
@@ -88,7 +89,6 @@ public class ManaSyncManager {
         
         lastArsMana.put(playerId, getArsMana(player));
     }
-    
     public static void showManaInfo(ServerPlayer player, net.minecraft.commands.CommandSourceStack source) {
         double ironsMana = getIronsMana(player);
         double ironsMax = getIronsMaxMana(player);
