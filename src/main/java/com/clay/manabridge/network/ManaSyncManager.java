@@ -14,6 +14,8 @@ import java.util.UUID;
 public class ManaSyncManager {
     private static final Map<UUID, Double> lastArsMana = new HashMap<>();
     private static final Map<UUID, Double> nativeIronsMax = new HashMap<>();
+    private static final Map<UUID, Integer> idleTicks = new HashMap<>();
+    private static final Map<UUID, Double> idleCheckMana = new HashMap<>();
     private static int tickCounter = 0;
     
     public static void tick(ServerPlayer player) {
@@ -62,6 +64,30 @@ public class ManaSyncManager {
         } else {
             double ironsPercent = getIronsMana(player) / ironsMax;
             setArsMana(player, ironsPercent * realArsMax);
+        }
+        
+            
+        // Корректировка неполного заполнения
+        double currentMana = getIronsMana(player);
+        double maxMana = getIronsMaxMana(player);
+        
+        if (maxMana - currentMana > 0 && (maxMana - currentMana) / maxMana < 0.05) {
+            Double lastCheck = idleCheckMana.get(playerId);
+            if (lastCheck != null && Math.abs(currentMana - lastCheck) < 0.01) {
+                int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
+                if (ticks >= 15) {
+                    setIronsMana(player, maxMana);
+                    setArsMana(player, getArsMaxMana(player));
+                    idleTicks.put(playerId, 0);
+                } else {
+                    idleTicks.put(playerId, ticks);
+                }
+            } else {
+                idleTicks.put(playerId, 0);
+            }
+            idleCheckMana.put(playerId, currentMana);
+        } else {
+            idleTicks.put(playerId, 0);
         }
         
         lastArsMana.put(playerId, getArsMana(player));
