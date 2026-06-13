@@ -1,0 +1,20 @@
+{
+  "manabridge.info.title": "=== Mana Bridge ===",
+  "manabridge.info.pool": "Общий пул (Iron's): %s/%s",
+  "manabridge.info.ars": "Ars: %s/%s (%s%%)",
+  
+  "config.manabridge.k_ars": "Множитель Ars Nouveau",
+  "config.manabridge.k_ars.desc": "Множитель для маны Ars Nouveau в формуле максимума",
+  "config.manabridge.k_irons": "Множитель Iron's Spells",
+  "config.manabridge.k_irons.desc": "Множитель для маны Iron's Spells в формуле максимума",
+  "config.manabridge.n_value": "Вычитаемое значение",
+  "config.manabridge.n_value.desc": "Число, вычитаемое из общего максимума маны",
+  "config.manabridge.max_mana_cap": "Лимит маны",
+  "config.manabridge.max_mana_cap.desc": "Абсолютный лимит маны (0 = без ограничений)",
+  "config.manabridge.sync_direction": "Направление синхронизации",
+  "config.manabridge.sync_direction.desc": "Направление: both, ars_to_irons, irons_to_ars",
+  "config.manabridge.batch_update": "Пакетное обновление",
+  "config.manabridge.batch_update.desc": "Обновлять ману реже для оптимизации",
+  "config.manabridge.update_on_change_only": "Обновление при изменении",
+  "config.manabridge.update_on_change_only.desc": "Синхронизировать только когда мана меняется"
+}
