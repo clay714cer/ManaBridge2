@@ -6,6 +6,7 @@ import com.clay.manabridge.config.Config;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,16 +32,15 @@ public class ManaSyncManager {
         
         if (ironsMax <= 0 || realArsMax <= 0) return;
         
-        // Сохраняем родной максимум Iron's один раз
         if (!nativeIronsMax.containsKey(playerId)) {
             nativeIronsMax.put(playerId, 100.0);
         }
         
-        // Раз в 5 секунд — добавить бонус от Ars к Iron's
         if (tickCounter % 100 == 0) {
             int arsBonus = Math.max(0, realArsMax - 100);
             double baseMax = nativeIronsMax.getOrDefault(playerId, 100.0);
-            double newMax = baseMax + arsBonus;
+            double newMax = baseMax + arsBonus - Config.N_VALUE.get();
+            if (newMax < 1) newMax = 1;
             setIronsMaxMana(player, newMax);
             ironsMax = newMax;
         }
@@ -66,49 +66,47 @@ public class ManaSyncManager {
             setArsMana(player, ironsPercent * realArsMax);
         }
         
-        // Корректировка неполного заполнения
-        if (ironsMax - ironsMana > 0 && ironsMax - ironsMana < ironsMax * 0.03 + 1) {
-            Double lastCheck = idleCheckMana.get(playerId);
-            int ticks = idleTicks.getOrDefault(playerId, 0);
-            
-            // Отладка раз в 10 тиков
-            if (tickCounter % 2 == 0) {
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                    "§e[Debug] mana=" + String.format("%.0f", ironsMana) + " lastCheck=" + (lastCheck != null ? String.format("%.0f", lastCheck) : "null") + " ticks=" + ticks
-                ));
-            }
-            
-            if (lastCheck != null && Math.abs(ironsMana - lastCheck) < 0.5) {
-                ticks++;
+        double fillPercent = ironsMana / ironsMax;
+        if (fillPercent > 0.985 && fillPercent < 1.0) {
+            Double lastFill = idleCheckMana.get(playerId);
+            if (lastFill != null && Math.abs(fillPercent - lastFill) < 0.001) {
+                int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
                 if (ticks >= 15) {
                     setIronsMana(player, ironsMax);
                     setArsMana(player, realArsMax);
                     idleTicks.put(playerId, 0);
-                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§a[Debug] CORRECTED!"));
                 } else {
                     idleTicks.put(playerId, ticks);
                 }
             } else {
                 idleTicks.put(playerId, 0);
             }
-            idleCheckMana.put(playerId, ironsMana);
+            idleCheckMana.put(playerId, fillPercent);
         } else {
             idleTicks.put(playerId, 0);
         }
         
         lastArsMana.put(playerId, getArsMana(player));
     }
+    
     public static void showManaInfo(ServerPlayer player, net.minecraft.commands.CommandSourceStack source) {
         double ironsMana = getIronsMana(player);
         double ironsMax = getIronsMaxMana(player);
         double arsMana = getArsMana(player);
         int arsMax = getArsMaxMana(player);
         
-        source.sendSuccess(() -> net.minecraft.network.chat.Component.literal(
-            "§6=== Mana Bridge ===\n" +
-            "§bОбщий пул (Iron's): §f" + String.format("%.0f", ironsMana) + "/" + String.format("%.0f", ironsMax) + "\n" +
-            "§bArs: §f" + String.format("%.0f", arsMana) + "/" + arsMax + " (" + String.format("%.0f", (arsMana/arsMax)*100) + "%)"
-        ), false);
+        source.sendSuccess(() -> Component.literal("")
+            .append(Component.translatable("manabridge.info.title"))
+            .append("\n")
+            .append(Component.translatable("manabridge.info.pool",
+                String.format("%.0f", ironsMana),
+                String.format("%.0f", ironsMax)))
+            .append("\n")
+            .append(Component.translatable("manabridge.info.ars",
+                String.format("%.0f", arsMana),
+                String.format("%d", arsMax),
+                String.format("%.0f", (arsMana/arsMax)*100))
+            ), false);
     }
     
     private static double getArsMana(ServerPlayer player) {
