@@ -72,7 +72,7 @@ public class ManaSyncManager {
             int ticks = idleTicks.getOrDefault(playerId, 0);
             
             // Отладка раз в 10 тиков
-            if (tickCounter % 20 == 0) {
+            if (tickCounter % 2 == 0) {
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
                     "§e[Debug] mana=" + String.format("%.0f", ironsMana) + " lastCheck=" + (lastCheck != null ? String.format("%.0f", lastCheck) : "null") + " ticks=" + ticks
                 ));
