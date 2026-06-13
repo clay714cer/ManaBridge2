@@ -66,16 +66,25 @@ public class ManaSyncManager {
             setArsMana(player, ironsPercent * realArsMax);
         }
         
-        
-        // Корректировка неполного заполнения (до 3% + 1 маны)
+        // Корректировка неполного заполнения
         if (ironsMax - ironsMana > 0 && ironsMax - ironsMana < ironsMax * 0.03 + 1) {
             Double lastCheck = idleCheckMana.get(playerId);
+            int ticks = idleTicks.getOrDefault(playerId, 0);
+            
+            // Отладка раз в 10 тиков
+            if (tickCounter % 20 == 0) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                    "§e[Debug] mana=" + String.format("%.0f", ironsMana) + " lastCheck=" + (lastCheck != null ? String.format("%.0f", lastCheck) : "null") + " ticks=" + ticks
+                ));
+            }
+            
             if (lastCheck != null && Math.abs(ironsMana - lastCheck) < 0.5) {
-                int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
+                ticks++;
                 if (ticks >= 15) {
                     setIronsMana(player, ironsMax);
                     setArsMana(player, realArsMax);
                     idleTicks.put(playerId, 0);
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§a[Debug] CORRECTED!"));
                 } else {
                     idleTicks.put(playerId, ticks);
                 }
