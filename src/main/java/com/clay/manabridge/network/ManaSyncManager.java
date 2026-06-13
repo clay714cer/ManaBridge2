@@ -66,18 +66,14 @@ public class ManaSyncManager {
             setArsMana(player, ironsPercent * realArsMax);
         }
         
-            
         // Корректировка неполного заполнения
-        double currentMana = getIronsMana(player);
-        double maxMana = getIronsMaxMana(player);
-        
-        if (maxMana - currentMana > 0 && (maxMana - currentMana) / maxMana < 0.05) {
+        if (ironsMax - ironsMana > 0 && (ironsMax - ironsMana) / ironsMax < 0.05) {
             Double lastCheck = idleCheckMana.get(playerId);
-            if (lastCheck != null && Math.abs(currentMana - lastCheck) < 0.01) {
+            if (lastCheck != null && Math.abs(ironsMana - lastCheck) < 0.01) {
                 int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
                 if (ticks >= 15) {
-                    setIronsMana(player, maxMana);
-                    setArsMana(player, getArsMaxMana(player));
+                    setIronsMana(player, ironsMax);
+                    setArsMana(player, realArsMax);
                     idleTicks.put(playerId, 0);
                 } else {
                     idleTicks.put(playerId, ticks);
@@ -85,7 +81,7 @@ public class ManaSyncManager {
             } else {
                 idleTicks.put(playerId, 0);
             }
-            idleCheckMana.put(playerId, currentMana);
+            idleCheckMana.put(playerId, ironsMana);
         } else {
             idleTicks.put(playerId, 0);
         }
