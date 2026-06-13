@@ -1,13 +1,20 @@
 {
-  "itemGroup.manabridge": "Example Mod Tab",
-  "block.manabridge.example_block": "Example Block",
-  "item.manabridge.example_item": "Example Item",
-
-  "manabridge.configuration.title": "Mana Bridge Configs",
-  "manabridge.configuration.section.manabridge.common.toml": "Mana Bridge Configs",
-  "manabridge.configuration.section.manabridge.common.toml.title": "Mana Bridge Configs",
-  "manabridge.configuration.items": "Item List",
-  "manabridge.configuration.logDirtBlock": "Log Dirt Block",
-  "manabridge.configuration.magicNumberIntroduction": "Magic Number Text",
-  "manabridge.configuration.magicNumber": "Magic Number"
+  "manabridge.info.title": "=== Mana Bridge ===",
+  "manabridge.info.pool": "Mana Pool (Iron's): %s/%s",
+  "manabridge.info.ars": "Ars: %s/%s (%s%%)",
+  
+  "config.manabridge.k_ars": "Ars Nouveau Multiplier",
+  "config.manabridge.k_ars.desc": "Multiplier for Ars Nouveau mana in max mana formula",
+  "config.manabridge.k_irons": "Iron's Spells Multiplier",
+  "config.manabridge.k_irons.desc": "Multiplier for Iron's Spells mana in max mana formula",
+  "config.manabridge.n_value": "Subtracted Value",
+  "config.manabridge.n_value.desc": "Number subtracted from total max mana",
+  "config.manabridge.max_mana_cap": "Max Mana Cap",
+  "config.manabridge.max_mana_cap.desc": "Hard cap for total mana (0 = unlimited)",
+  "config.manabridge.sync_direction": "Sync Direction",
+  "config.manabridge.sync_direction.desc": "Direction: both, ars_to_irons, irons_to_ars",
+  "config.manabridge.batch_update": "Batch Update",
+  "config.manabridge.batch_update.desc": "Update mana less frequently for optimization",
+  "config.manabridge.update_on_change_only": "Update On Change Only",
+  "config.manabridge.update_on_change_only.desc": "Only sync when mana actually changes"
 }
