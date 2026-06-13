@@ -67,7 +67,7 @@ public class ManaSyncManager {
         }
         
         double fillPercent = ironsMana / ironsMax;
-        if (fillPercent > 0.985 && fillPercent < 1.0) {
+        if (fillPercent > 0.96 && fillPercent < 1.0) {
             Double lastFill = idleCheckMana.get(playerId);
             if (lastFill != null && Math.abs(fillPercent - lastFill) < 0.001) {
                 int ticks = idleTicks.getOrDefault(playerId, 0) + 1;
