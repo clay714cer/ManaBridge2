@@ -32,9 +32,7 @@ public class ManaSyncManager {
         
         if (ironsMax <= 0 || realArsMax <= 0) return;
         
-        if (!nativeIronsMax.containsKey(playerId)) {
-            nativeIronsMax.put(playerId, 100.0);
-        }
+        nativeIronsMax.put(playerId, 100.0); // Всегда сбрасываем при входе
         
         if (tickCounter % 100 == 0) {
             int arsBonus = Math.max(0, realArsMax - 100);
