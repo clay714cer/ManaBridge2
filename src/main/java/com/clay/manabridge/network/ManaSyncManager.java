@@ -32,7 +32,7 @@ public class ManaSyncManager {
         
         if (ironsMax <= 0 || realArsMax <= 0) return;
         
-        nativeIronsMax.put(playerId, 100.0); // Всегда сбрасываем при входе
+        nativeIronsMax.put(playerId, 100.0);
         
         if (tickCounter % 100 == 0) {
             int arsBonus = Math.max(0, realArsMax - 100);
@@ -40,7 +40,9 @@ public class ManaSyncManager {
             double newMax = baseMax + arsBonus - Config.N_VALUE.get();
             if (newMax < 1) newMax = 1;
             setIronsMaxMana(player, newMax);
+            setArsMaxMana(player, newMax);
             ironsMax = newMax;
+            realArsMax = (int) newMax;
         }
         
         Double lastArs = lastArsMana.get(playerId);
@@ -119,6 +121,11 @@ public class ManaSyncManager {
     
     private static void setArsMana(ServerPlayer player, double amount) {
         try { IManaCap m = CapabilityRegistry.getMana(player); if (m != null) m.setMana(amount); }
+        catch (Exception e) {}
+    }
+    
+    private static void setArsMaxMana(ServerPlayer player, double max) {
+        try { IManaCap m = CapabilityRegistry.getMana(player); if (m != null) m.setMaxMana((int) max); }
         catch (Exception e) {}
     }
     
